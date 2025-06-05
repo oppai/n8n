@@ -241,7 +241,7 @@ describe('uninstallPackage', () => {
 		expect(removeCommunityPackageSpy).toHaveBeenCalledTimes(0);
 	});
 
-	it('should return if nodes are not found', async () => {
+        it('should return if nodes are not found', async () => {
 		const communityPackage = {
 			installedNodes: [],
 		};
@@ -263,9 +263,56 @@ describe('uninstallPackage', () => {
 		expect(deleteCommunityNode).toHaveBeenCalledTimes(0);
 
 		expect(removeCommunityPackageSpy).toHaveBeenCalledTimes(1);
-		expect(removeCommunityPackageSpy).toHaveBeenCalledWith(
-			'n8n-nodes-evolution-api',
-			communityPackage,
-		);
-	});
+                expect(removeCommunityPackageSpy).toHaveBeenCalledWith(
+                        'n8n-nodes-evolution-api',
+                        communityPackage,
+                );
+        });
+});
+
+describe('installPackage', () => {
+       const config: Config = mock<Config>();
+       const communityNode = new CommunityNode(
+               ['--install', '--package', 'n8n-nodes-test'],
+               config,
+       );
+
+       beforeEach(() => {
+               communityNode.installPackage = jest.fn();
+       });
+
+       afterEach(() => {
+               jest.resetAllMocks();
+       });
+
+       it('should install the package', async () => {
+               communityNode.parseFlags = jest.fn().mockReturnValue({
+                       flags: { package: 'n8n-nodes-test', install: true },
+               });
+
+               const installPackage = jest.spyOn(communityNode, 'installPackage');
+
+               await communityNode.run();
+
+               expect(installPackage).toHaveBeenCalledTimes(1);
+               expect(installPackage).toHaveBeenCalledWith('n8n-nodes-test', false, undefined);
+       });
+
+       it('should install the package with verify and version', async () => {
+               communityNode.parseFlags = jest.fn().mockReturnValue({
+                       flags: {
+                               package: 'n8n-nodes-test',
+                               install: true,
+                               verify: true,
+                               version: '0.2.0',
+                       },
+               });
+
+               const installPackage = jest.spyOn(communityNode, 'installPackage');
+
+               await communityNode.run();
+
+               expect(installPackage).toHaveBeenCalledTimes(1);
+               expect(installPackage).toHaveBeenCalledWith('n8n-nodes-test', true, '0.2.0');
+       });
 });
